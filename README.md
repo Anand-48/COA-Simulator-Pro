@@ -146,8 +146,8 @@ Special cases follow IEEE-754: `1/0 = ∞` (sets `DIV/0`), `0/0` and `∞−∞`
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Anand-48/Mca-COA-mini-projects-.git
-cd Mca-COA-mini-projects-
+git clone https://github.com/Anand-48/COA-Simulator-Pro.git
+cd COA-Simulator-Pro
 ```
 
 ### 2. Install the dependencies
