@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COA Simulator Pro – Online</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔌</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8eef3;--panel:#f7fafc;--ink:#10273b;--mute:#5b6f80;--line:#c3d0da;--sign:#c2571a;--exp:#1f5fa8;--man:#2a8a7a;--on:#10273b;--off:#dbe5ec;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Bricolage Grotesque",system-ui,sans-serif}
+header{padding:28px 20px 8px;max-width:960px;margin:auto}
+h1{font-size:clamp(28px,6vw,46px);line-height:1.05;margin:0 0 8px;letter-spacing:-.02em}
+header p{margin:0;color:var(--mute);max-width:60ch}
+main{max-width:960px;margin:auto;padding:16px 20px 48px}
+.tabs{display:flex;gap:8px;margin:16px 0}
+.tabs button{font:inherit;font-weight:700;padding:10px 18px;border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:8px;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--ink);color:#fff}
+:focus-visible{outline:3px solid var(--sign);outline-offset:2px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin-bottom:16px}
+label{display:flex;flex-direction:column;font-size:14px;color:var(--mute);gap:4px;flex:1 1 180px}
+input,select{font:inherit;font-family:ui-monospace,Consolas,monospace;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);width:100%}
+button.go{font:inherit;font-weight:700;padding:10px 22px;border:0;border-radius:8px;background:var(--sign);color:#fff;cursor:pointer}
+.bits{margin:10px 0 14px}
+.bits h3{font-size:14px;margin:0 0 4px;color:var(--mute);font-weight:400;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.bits h3 b{color:var(--ink);font-family:ui-monospace,Consolas,monospace;font-weight:400}
+.grid{display:flex;flex-wrap:wrap;gap:6px}
+.grp{display:flex;gap:2px;flex:1 1 130px}
+.bit{flex:1;min-width:10px;height:30px;border-radius:3px;background:var(--off);color:var(--mute);display:grid;place-items:center;font:12px ui-monospace,Consolas,monospace}
+.bit.on{background:var(--on);color:#fff}
+.bit.s.on{background:var(--sign)}.bit.e.on{background:var(--exp)}.bit.m.on{background:var(--man)}
+.bit.s{outline:1px solid var(--sign)}
+.flags{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0}
+.flag{padding:6px 14px;border-radius:999px;border:2px solid var(--line);font-weight:700;color:var(--mute)}
+.flag.on{border-color:var(--sign);background:var(--sign);color:#fff}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--mute);flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.out{font-family:ui-monospace,Consolas,monospace;background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;white-space:pre;font-size:14px}
+.err{color:#b3261e;font-weight:700}
+footer{max-width:960px;margin:auto;padding:0 20px 40px;color:var(--mute);font-size:14px}
+footer a{color:var(--exp)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>COA Simulator Pro</h1>
+  <p>Work through 32-bit ALU operations and FP8 to FP64 floating-point numbers bit by bit, right in your browser.</p>
+</header>
+<main>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="t1" aria-selected="true" aria-controls="alu">32-bit ALU</button>
+    <button role="tab" id="t2" aria-selected="false" aria-controls="fpu">Floating-point FPU</button>
+  </div>
+
+  <section id="alu" role="tabpanel" aria-labelledby="t1">
+    <div class="row">
+      <label>Operand A<input id="a" value="0x7FFFFFFF" autocomplete="off"></label>
+      <label>Operand B<input id="b" value="1" autocomplete="off"></label>
+      <label>Operation
+        <select id="op">
+          <option>ADD</option><option>SUB</option><option>AND</option><option>OR</option>
+          <option>XOR</option><option>NOT A</option><option>SHL</option><option>SHR</option><option>SAR</option>
+        </select>
+      </label>
+      <button class="go" id="runAlu">Run</button>
+    </div>
+    <p style="margin:0 0 8px;color:var(--mute);font-size:14px">Enter decimal (negatives allowed), hex like 0xFF, or binary like 0b1010. Shifts use the low 5 bits of B as the shift amount.</p>
+    <div id="aluBits"></div>
+    <div class="flags" id="flags"></div>
+    <div class="out" id="aluOut"></div>
+    <p class="err" id="aluErr"></p>
+  </section>
+
+  <section id="fpu" role="tabpanel" aria-labelledby="t2" hidden>
+    <div class="row">
+      <label>Format
+        <select id="fmt">
+          <option value="fp8">FP8 (1-4-3)</option><option value="fp16">FP16 (1-5-10)</option>
+          <option value="fp32" selected>FP32 (1-8-23)</option><option value="fp64">FP64 (1-11-52)</option>
+        </select>
+      </label>
+      <label>Operand A<input id="fa" value="0.1" autocomplete="off"></label>
+      <label>Operand B<input id="fb" value="0.2" autocomplete="off"></label>
+      <label>Operation
+        <select id="fop"><option>ADD</option><option>SUB</option><option>MUL</option><option>DIV</option></select>
+      </label>
+      <button class="go" id="runFpu">Run</button>
+    </div>
+    <div class="legend"><span><i style="background:var(--sign)"></i>sign</span><span><i style="background:var(--exp)"></i>exponent</span><span><i style="background:var(--man)"></i>mantissa</span></div>
+    <div id="fpuBits"></div>
+    <div class="out" id="fpuOut"></div>
+    <p class="err" id="fpuErr"></p>
+  </section>
+</main>
+<footer>
+  Desktop version (Python and customtkinter):
+  <a href="https://github.com/Anand-48/COA-Simulator-Pro/releases/latest">download for Windows</a> ·
+  <a href="https://github.com/Anand-48/COA-Simulator-Pro">source code</a>
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const hex=(n,w)=>"0x"+n.toString(16).toUpperCase().padStart(w,"0");
+
+/* ---------- tabs ---------- */
+[["t1","alu"],["t2","fpu"]].forEach(([t,p])=>$(t).onclick=()=>{
+  ["t1","t2"].forEach(x=>$(x).setAttribute("aria-selected",x===t));
+  ["alu","fpu"].forEach(x=>$(x).hidden=x!==p);
+});
+
+/* ---------- bit row renderer ---------- */
+function bitRow(title,val,width,info,cls){
+  const bin=val.toString(2).padStart(width,"0");
+  let cells="",out="";
+  for(let i=0;i<width;i++){
+    cells+=`<span class="bit ${cls?cls(i):""} ${bin[i]==="1"?"on":""}">${bin[i]}</span>`;
+    if((i+1)%8===0||i===width-1){out+=`<div class="grp">${cells}</div>`;cells="";}
+  }
+  return `<div class="bits"><h3><span>${title}</span><b>${info}</b></h3><div class="grid">${out}</div></div>`;
+}
+
+/* ---------- ALU ---------- */
+function parse32(s){
+  s=s.trim();
+  if(!/^-?(0x[0-9a-f]+|0b[01]+|\d+)$/i.test(s))throw new Error(`"${s}" is not a valid number. Use decimal, 0x hex or 0b binary.`);
+  const neg=s[0]==="-";const v=BigInt(neg?s.slice(1):s);
+  return Number(BigInt.asUintN(32,neg?-v:v));
+}
+const signed=n=>n|0;
+function runAlu(){
+  $("aluErr").textContent="";
+  try{
+    const a=parse32($("a").value),b=parse32($("b").value),op=$("op").value;
+    let r=0,c=0,v=0,note="";
+    const SB=0x80000000,sh=b&31;
+    switch(op){
+      case"ADD":{const s=a+b;r=s>>>0;c=s>0xFFFFFFFF?1:0;v=((a^r)&(b^r)&SB)?1:0;note=`${a} + ${b}`;break}
+      case"SUB":{r=(a-b)>>>0;c=a>=b?1:0;v=((a^b)&(a^r)&SB)?1:0;note=`A + (~B) + 1`;break}
+      case"AND":r=(a&b)>>>0;break;
+      case"OR":r=(a|b)>>>0;break;
+      case"XOR":r=(a^b)>>>0;break;
+      case"NOT A":r=(~a)>>>0;break;
+      case"SHL":r=(a<<sh)>>>0;c=sh?((a>>>(32-sh))&1):0;note=`shift left by ${sh}`;break;
+      case"SHR":r=(a>>>sh)>>>0;c=sh?((a>>>(sh-1))&1):0;note=`logical shift right by ${sh}`;break;
+      case"SAR":r=(signed(a)>>sh)>>>0;c=sh?((a>>>(sh-1))&1):0;note=`arithmetic shift right by ${sh}`;break;
+    }
+    const z=r===0?1:0,n=(r&SB)?1:0;
+    $("aluBits").innerHTML=
+      bitRow("A",a,32,`${hex(a,8)} · unsigned ${a} · signed ${signed(a)}`)+
+      (op==="NOT A"?"":bitRow("B",b,32,`${hex(b,8)} · unsigned ${b} · signed ${signed(b)}`))+
+      bitRow("Result",r,32,`${hex(r,8)} · unsigned ${r} · signed ${signed(r)}`);
+    $("flags").innerHTML=[["Z",z],["N",n],["C",c],["V",v]].map(([k,f])=>`<span class="flag ${f?"on":""}">${k} = ${f}</span>`).join("");
+    $("aluOut").textContent=
+`${op}  ${note}
+Zero (Z): result is ${z?"":"not "}zero
+Negative (N): bit 31 is ${n}
+Carry (C): ${c}
+Overflow (V): ${v?"signed result does not fit in 32 bits":"none"}`;
+  }catch(e){$("aluErr").textContent=e.message}
+}
+
+/* ---------- FPU ---------- */
+const FM={fp8:[4,3],fp16:[5,10],fp32:[8,23],fp64:[11,52]};
+const rne=x=>{const f=Math.floor(x),d=x-f;return d<.5?f:d>.5?f+1:(f%2===0?f:f+1)};
+function encode(x,E,M){
+  const bias=2**(E-1)-1,maxE=2**E-1;
+  const pack=(s,e,m)=>(BigInt(s)<<BigInt(E+M))|(BigInt(e)<<BigInt(M))|BigInt(m);
+  if(Number.isNaN(x))return pack(0,maxE,2**(M-1));
+  const s=(x<0||Object.is(x,-0))?1:0,ax=Math.abs(x);
+  if(ax===Infinity)return pack(s,maxE,0);
+  if(ax===0)return pack(s,0,0);
+  let e=Math.floor(Math.log2(ax));
+  while(2**e>ax)e--;while(2**(e+1)<=ax)e++;
+  if(e<1-bias){
+    const m=rne(ax/2**(1-bias-M));
+    return m>=2**M?pack(s,1,0):pack(s,0,m);
+  }
+  let m=rne((ax/2**e-1)*2**M);
+  if(m>=2**M){m=0;e++}
+  if(e+bias>=maxE)return pack(s,maxE,0);
+  return pack(s,e+bias,m);
+}
+function decode(bits,E,M){
+  const bias=2**(E-1)-1,maxE=2**E-1;
+  const m=Number(bits&((1n<<BigInt(M))-1n)),e=Number((bits>>BigInt(M))&BigInt(maxE)),s=Number(bits>>BigInt(E+M))?-1:1;
+  if(e===maxE)return m?NaN:s*Infinity;
+  if(e===0)return s*m*2**(1-bias-M);
+  return s*(1+m/2**M)*2**(e-bias);
+}
+function parseF(s){
+  const t=s.trim().toLowerCase();
+  if(t==="inf"||t==="+inf")return Infinity;if(t==="-inf")return-Infinity;if(t==="nan")return NaN;
+  if(t===""||isNaN(Number(t)))throw new Error(`"${s}" is not a number. Try 3.14, -2.5e-3, inf or nan.`);
+  return Number(t);
+}
+function fpRow(title,x,E,M){
+  const bits=encode(x,E,M),w=E+M+1;
+  const bin=bits.toString(2).padStart(w,"0");
+  const cls=i=>i===0?"s":i<=E?"e":"m";
+  const d=decode(bits,E,M);
+  const info=`${hex(bits,Math.ceil(w/4))} · ${Object.is(d,-0)?"-0":d}`;
+  const bitsHtml=`<div class="grid"><div class="grp" style="flex:0 1 ${w*22}px">${[...bin].map((c,i)=>`<span class="bit ${cls(i)} ${c==="1"?"on":""}">${c}</span>`).join("")}</div></div>`;
+  return {html:`<div class="bits"><h3><span>${title}</span><b>${info}</b></h3>${bitsHtml}</div>`,bits,d,bin};
+}
+function runFpu(){
+  $("fpuErr").textContent="";
+  try{
+    const [E,M]=FM[$("fmt").value],op=$("fop").value;
+    const ax=parseF($("fa").value),bx=parseF($("fb").value);
+    const A=fpRow(`A stored as ${$("fmt").value.toUpperCase()}`,ax,E,M);
+    const B=fpRow("B stored",bx,E,M);
+    const exact=op==="ADD"?A.d+B.d:op==="SUB"?A.d-B.d:op==="MUL"?A.d*B.d:A.d/B.d;
+    const R=fpRow("Result",exact,E,M);
+    $("fpuBits").innerHTML=A.html+B.html+R.html;
+    const bias=2**(E-1)-1;
+    const rs=R.bin[0],re=R.bin.slice(1,1+E),rm=R.bin.slice(1+E);
+    const eInt=parseInt(re,2);
+    $("fpuOut").textContent=
+`${op}: ${A.d} ${{ADD:"+",SUB:"-",MUL:"×",DIV:"÷"}[op]} ${B.d}
+Exact result: ${exact}
+Stored result: ${R.d}
+Rounding error: ${Number.isFinite(exact)&&Number.isFinite(R.d)?Math.abs(exact-R.d):"n/a"}
+Sign: ${rs} (${rs==="1"?"negative":"positive"})
+Exponent: ${re} = ${eInt}, bias ${bias}${eInt===0?" (zero or subnormal)":eInt===2**E-1?" (infinity or NaN)":`, true exponent ${eInt-bias}`}
+Mantissa: ${rm}`;
+  }catch(e){$("fpuErr").textContent=e.message}
+}
+
+$("runAlu").onclick=runAlu;$("runFpu").onclick=runFpu;
+["a","b","op"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")runAlu()}));
+["fa","fb","fop","fmt"].forEach(i=>$(i).addEventListener("keydown",e=>{if(e.key==="Enter")runFpu()}));
+runAlu();runFpu();
+</script>
+</body>
+</html>
