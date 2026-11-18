@@ -1,4 +1,4 @@
-# alu_core.py
+# ALU core logic
 
 MASK = 0xFFFFFFFF
 SIGN_BIT = 0x80000000
