@@ -1,3 +1,5 @@
+# Splash screen and launcher for COA Simulator Pro
+
 """
 COA Simulator Pro launcher
 
