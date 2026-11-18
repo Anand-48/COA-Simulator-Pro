@@ -1,3 +1,5 @@
+# Main GUI entry point
+
 """
 COA Simulator Pro - configurable-width ALU + multi-format IEEE-754 FPU with live circuit view
 ==============================================================================================
