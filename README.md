@@ -13,6 +13,18 @@
 
 ---
 
+Live demo
+
+Try it in your browser: https://anand-48.github.io/COA-Simulator-Pro/
+
+The web version runs the 32-bit ALU and the FPU (FP8, FP16, FP32, FP64) with no install.
+
+Download (Windows desktop app)
+
+Download the latest release and run COA_Simulator_Pro.exe.
+
+If Windows shows "Windows protected your PC", click More info, then Run anyway.
+
 ## 📖 What is this project?
 
 Most programs give you `5 + 3 = 8` and hide everything in between. **COA Simulator Pro** opens the box. You pick an instruction, type two operands, and the simulator:
@@ -26,17 +38,7 @@ It is built for learning: you can click individual bits, watch carries ripple, a
 
 ---
 
-Live demo
 
-Try it in your browser: https://anand-48.github.io/COA-Simulator-Pro/
-
-The web version runs the 32-bit ALU and the FPU (FP8, FP16, FP32, FP64) with no install.
-
-Download (Windows desktop app)
-
-Download the latest release and run COA_Simulator_Pro.exe.
-
-If Windows shows "Windows protected your PC", click More info, then Run anyway.
 
 ## 🖥️ How it works, from start to finish
 
