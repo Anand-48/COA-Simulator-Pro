@@ -1,4 +1,4 @@
-# fpu_core.py
+# FPU core logic
 
 import math
 import struct
